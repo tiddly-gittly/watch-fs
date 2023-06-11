@@ -26,6 +26,8 @@ exports.startup = () => {
   ($tw as ITWWithMonitor).watchFs = monitor;
 };
 
+type IBootFilesIndexItemWithTitle = Omit<IBootFilesIndexItem & { tiddlerTitle: string }, 'isEditableFile'>;
+
 class FileSystemMonitor {
   isDebug: boolean = true;
 
@@ -57,7 +59,7 @@ class FileSystemMonitor {
    *   }
    * }
    */
-  inverseFilesIndex: IBootFilesIndex = {};
+  inverseFilesIndex: Record<string, IBootFilesIndexItemWithTitle> = {};
 
   /**
    * A mutex to ignore temporary file created or deleted by this plugin.
@@ -69,7 +71,7 @@ class FileSystemMonitor {
   watcher: chokidar.FSWatcher;
 
   constructor() {
-    // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console, @typescript-eslint/no-empty-function
     this.debugLog = this.isDebug ? console.log : () => {};
     this.watchPathBase = path.resolve(
       ($tw.boot.wikiInfo?.config as ITiddlyWikiInfoJSONWithExtraConfig | undefined)?.watchFolder || $tw.boot.wikiTiddlersPath || './tiddlers',
@@ -92,7 +94,7 @@ class FileSystemMonitor {
   }
 
   // Helpers to maintain our cached index for file path and tiddler title
-  updateInverseIndex(filePath: string, fileDescriptor: IBootFilesIndexItem | undefined) {
+  updateInverseIndex(filePath: string, fileDescriptor: IBootFilesIndexItemWithTitle | undefined) {
     if (fileDescriptor) {
       this.inverseFilesIndex[filePath] = fileDescriptor;
     } else {
@@ -248,24 +250,22 @@ class FileSystemMonitor {
               // We just update the index.
               // But it might also be user changing the name of the file, so filename to be different with the actual tiddler title, while tiddler content is still same as old one
               // We allow filename to be different with the tiddler title, but we need to handle this in the inverse index to prevent the error that we can't get tiddler from index by its path
-              this.debugLog('deepEqual with existed tiddler fileDescriptor.tiddlerTitle', fileDescriptor.tiddlerTitle);
-              if (
-                fileDescriptor.tiddlerTitle &&
-                fileDescriptor.tiddlerTitle !== `${tiddler.title}.tid` &&
-                fileDescriptor.tiddlerTitle !== tiddler.title
-              ) {
-                // We have no API in tw to inform $tw about we have a file changed its name, but remain its tiddler title
-                // because to do that now we have to use `$tw.syncadaptor.wiki.addTiddler(tiddler);`, which will create a new file with the title we pass to it, it can't assign a disk file name while create a new tiddler
-                throw new Error('Rename filename is not supported, please submit your idea to improve this logic');
-                // updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
-              } else {
-                this.updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
-              }
+              this.debugLog('deepEqual with existed tiddler, tiddler.title: ', tiddler.title);
+              // if (
+              //   fileDescriptor.tiddlerTitle &&
+              //   fileDescriptor.tiddlerTitle !== `${tiddler.title}.tid` &&
+              //   fileDescriptor.tiddlerTitle !== tiddler.title
+              // ) {
+              //   // We have no API in tw to inform $tw about we have a file changed its name, but remain its tiddler title
+              //   // because to do that now we have to use `$tw.syncadaptor.wiki.addTiddler(tiddler);`, which will create a new file with the title we pass to it, it can't assign a disk file name while create a new tiddler
+              //   throw new Error('Rename filename is not supported, please submit your idea to improve this logic');
+              //   // updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
+              // } else {
+              this.updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
+              // }
             } else {
               this.debugLog(
-                'get new addTiddler fileDescriptor.tiddlerTitle',
-                fileDescriptor.tiddlerTitle,
-                'tiddler.title',
+                'get new addTiddler tiddler.title',
                 tiddler.title,
               );
               this.updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
@@ -278,7 +278,10 @@ class FileSystemMonitor {
           tiddlers
             .filter((tiddler) => {
               this.debugLog('updating existed tiddler', tiddler.title);
-              const { fields: tiddlerInWiki } = $tw.wiki.getTiddler(tiddler.title);
+              const tiddlerInWiki = $tw.wiki.getTiddler(tiddler.title)?.fields;
+              if (tiddlerInWiki === undefined) {
+                return true;
+              }
               if (deepEqual(tiddler, tiddlerInWiki)) {
                 this.debugLog('Ignore update due to detect this is a change from the Browser', tiddler.title);
                 return false;

@@ -1,6 +1,6 @@
 import { getType } from 'mime';
 import path from 'path';
-import { SourceIterator, Tiddler } from 'tiddlywiki';
+import { ITiddlersInFile, SourceIterator, Tiddler } from 'tiddlywiki';
 
 export function pad(number: number) {
   if (number < 10) {
@@ -20,7 +20,7 @@ export function toTWUTCString(date: Date) {
   }`;
 }
 
-export function safeStringifyHugeTiddler(tiddlerToStringify: Tiddler, fileExtensionOfTiddler: string) {
+export function safeStringifyHugeTiddler(tiddlerToStringify: ITiddlersInFile | Tiddler, fileExtensionOfTiddler: string) {
   if (fileExtensionOfTiddler === 'tid') {
     return JSON.stringify(tiddlerToStringify, undefined, '  ');
   }
@@ -66,7 +66,7 @@ export function generateTiddlerBaseFilepath(title: string) {
     baseFilename = title.replace(/\/|\\/g, '_');
   }
   // Remove any of the characters that are illegal in Windows filenames
-  baseFilename = $tw.utils.transliterate(baseFilename.replace(/<|>|\:|\"|\||\?|\*|\^/g, '_'));
+  baseFilename = $tw.utils.transliterate(baseFilename.replace(/<|>|:|"|\||\?|\*|\^/g, '_'));
   // Truncate the filename if it is too long
   if (baseFilename.length > 200) {
     baseFilename = baseFilename.substr(0, 200);

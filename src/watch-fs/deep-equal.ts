@@ -1,6 +1,10 @@
 import { ITiddlerFields } from 'tiddlywiki';
 
-export function deepEqual(x, y) {
+function isTiddlerField(x: unknown): x is ITiddlerFields {
+  return typeof x === 'object' && x !== null;
+}
+
+export function deepEqual(x: unknown, y: unknown): boolean {
   if (x === y) {
     return true;
   }
@@ -38,13 +42,13 @@ export function deepEqual(x, y) {
     } */
     return true;
   }
-  if (typeof x === 'object' && x !== null && typeof y === 'object' && y !== null) {
+  if (isTiddlerField(x) && isTiddlerField(y)) {
     deleteRuntimeFieldsFromTiddler(x);
     deleteRuntimeFieldsFromTiddler(y);
     if (Object.keys(x).length !== Object.keys(y).length) return false;
 
-    for (const property in x) {
-      if (!deepEqual(x[property], y[property])) return false;
+    for (const [property, xValue] of Object.entries(x)) {
+      if (!deepEqual(xValue, (y as Record<string, unknown>)?.[property])) return false;
     }
 
     return true;
@@ -52,7 +56,7 @@ export function deepEqual(x, y) {
   return false;
 }
 
-function titleListEqual(x, y) {
+function titleListEqual(x: unknown, y: unknown) {
   // y is like "GettingStarted [[Discover TiddlyWiki]] Upgrading", and x is an array
   if (typeof x === 'string' && Array.isArray(y)) {
     // $tw.utils.parseStringArray is heavy, so we use $tw.utils.stringifyList instead
@@ -64,12 +68,12 @@ function titleListEqual(x, y) {
   return false;
 }
 
-function timeStampEqual(x, y) {
+function timeStampEqual(x: unknown, y: unknown) {
   // strangely, `created` and `modified` field is not instanceof Date, so have to use x === 'object' to check it
-  if (typeof y === 'object' && y.toString && Object.keys(y).length === 0 && typeof x === 'string') {
+  if (typeof y === 'object' && y?.toString && Object.keys(y).length === 0 && typeof x === 'string') {
     return JSON.stringify(y).replace(/[".:TZ-]/g, '') === x;
   }
-  if (typeof x === 'object' && x.toString && Object.keys(x).length === 0 && typeof y === 'string') {
+  if (typeof x === 'object' && x?.toString && Object.keys(x).length === 0 && typeof y === 'string') {
     return JSON.stringify(x).replace(/[".:TZ-]/g, '') === y;
   }
   if (typeof x === 'string' && typeof y === 'string') {
