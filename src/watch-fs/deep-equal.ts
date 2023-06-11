@@ -4,6 +4,11 @@ function isTiddlerField(x: unknown): x is ITiddlerFields {
   return typeof x === 'object' && x !== null;
 }
 
+/**
+ * having fields like bag, revision doesn't mean two tiddler not equal, so we are not counting them
+ */
+const fieldsToCount = ['bag', 'revision'];
+
 export function deepEqual(x: unknown, y: unknown): boolean {
   if (x === y) {
     return true;
@@ -43,11 +48,12 @@ export function deepEqual(x: unknown, y: unknown): boolean {
     return true;
   }
   if (isTiddlerField(x) && isTiddlerField(y)) {
-    deleteRuntimeFieldsFromTiddler(x);
-    deleteRuntimeFieldsFromTiddler(y);
-    if (Object.keys(x).length !== Object.keys(y).length) return false;
+    const xNotCount = countRuntimeFieldsFromTiddler(x);
+    const yNotCount = countRuntimeFieldsFromTiddler(y);
+    if ((Object.keys(x).length - xNotCount) !== (Object.keys(y).length - yNotCount)) return false;
 
     for (const [property, xValue] of Object.entries(x)) {
+      if (fieldsToCount.includes(property)) continue;
       if (!deepEqual(xValue, (y as Record<string, unknown>)?.[property])) return false;
     }
 
@@ -82,17 +88,16 @@ function timeStampEqual(x: unknown, y: unknown) {
   return false;
 }
 
-const fieldsToDelete = ['bag', 'revision'];
 /**
- * Delete things like "bag" and "revision" that doesn't save to file
+ * Count things like "bag" and "revision" that doesn't save to file
  * @param {tiddler.fields} tiddlerFields
  */
-function deleteRuntimeFieldsFromTiddler(tiddlerFields: ITiddlerFields) {
-  for (const fieldName of fieldsToDelete) {
+function countRuntimeFieldsFromTiddler(tiddlerFields: ITiddlerFields) {
+  let counter = 0;
+  for (const fieldName of fieldsToCount) {
     if (fieldName in tiddlerFields) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error Index signature in type 'ITiddlerFields' only permits reading.ts(2542)
-      delete tiddlerFields[fieldName];
+      counter += 1;
     }
   }
+  return counter;
 }

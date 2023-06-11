@@ -72,7 +72,7 @@ class FileSystemMonitor {
 
   constructor() {
     // eslint-disable-next-line no-console, @typescript-eslint/no-empty-function
-    this.debugLog = this.isDebug ? console.log : () => {};
+    this.debugLog = this.isDebug ? (...args: any[]) => console.log('[watch-fs]', ...args) : () => {};
     this.watchPathBase = path.resolve(
       ($tw.boot.wikiInfo?.config as ITiddlyWikiInfoJSONWithExtraConfig | undefined)?.watchFolder || $tw.boot.wikiTiddlersPath || './tiddlers',
     );
@@ -88,9 +88,9 @@ class FileSystemMonitor {
         '**/.git',
       ],
       atomic: true,
-      useFsEvents: false, // fsevents is not bundled with 3rds.js
       //  usePolling: true,  // CHOKIDAR_USEPOLLING=1
     });
+    this.setupListeners();
   }
 
   // Helpers to maintain our cached index for file path and tiddler title
