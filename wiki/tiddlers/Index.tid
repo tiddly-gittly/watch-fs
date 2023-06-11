@@ -3,4 +3,23 @@ modified: 20230611160452798
 title: Index
 type: text/vnd.tiddlywiki
 
-asdf,
+Reload change from filesystem
+
+# https://github.com/OokTech/TW5-Bob/issues/198
+# https://github.com/Jermolene/TiddlyWiki5/issues/1530
+# https://github.com/Jermolene/TiddlyWiki5/issues/3060
+# https://github.com/nodejs/node/issues/47058
+# https://github.com/Jermolene/TiddlyWiki5/pull/176
+
+This only works in NodeJS wiki (For example, https://github.com/tiddly-gittly/TidGi-Desktop )
+
+!! Development
+
+Have [[pnpm|https://pnpm.io/]] and NodeJS installed, then:
+
+```sh
+pnpm i
+pnpm run dev
+```
+
+Then try modify this Index.tid in `wiki/tiddlers`, and see change in the http://127.0.0.1:8080
