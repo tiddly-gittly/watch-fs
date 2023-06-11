@@ -1,6 +1,26 @@
+import { getType } from 'mime';
 import path from 'path';
+import { SourceIterator, Tiddler } from 'tiddlywiki';
 
-export function safeStringifyHugeTiddler(tiddlerToStringify, fileExtensionOfTiddler: string) {
+export function pad(number: number) {
+  if (number < 10) {
+    return `0${number}`;
+  }
+  return String(number);
+}
+export function toTWUTCString(date: Date) {
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}${
+    pad(
+      date.getUTCHours(),
+    )
+  }${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}${
+    (date.getUTCMilliseconds() / 1000)
+      .toFixed(3)
+      .slice(2, 5)
+  }`;
+}
+
+export function safeStringifyHugeTiddler(tiddlerToStringify: Tiddler, fileExtensionOfTiddler: string) {
   if (fileExtensionOfTiddler === 'tid') {
     return JSON.stringify(tiddlerToStringify, undefined, '  ');
   }
@@ -29,13 +49,13 @@ export function safeStringifyHugeTiddler(tiddlerToStringify, fileExtensionOfTidd
  *
  * @param {string} title
  */
-function generateTiddlerBaseFilepath(title: string) {
+export function generateTiddlerBaseFilepath(title: string) {
   let baseFilename;
   // Check whether the user has configured a tiddler -> pathname mapping
   const pathNameFilters = $tw.wiki.getTiddlerText('$:/config/FileSystemPaths');
   if (pathNameFilters) {
     const source = $tw.wiki.makeTiddlerIterator([title]);
-    baseFilename = this.findFirstFilter(pathNameFilters.split('\n'), source);
+    baseFilename = findFirstFilter(pathNameFilters.split('\n'), source);
     if (baseFilename) {
       // Interpret "/" and "\" as path separator
       baseFilename = baseFilename.replace(/\/|\\/g, path.sep);
@@ -54,9 +74,9 @@ function generateTiddlerBaseFilepath(title: string) {
   return baseFilename;
 }
 
-function findFirstFilter(filters, source) {
-  for (let i = 0; i < filters.length; i++) {
-    const result = $tw.wiki.filterTiddlers(filters[i], null, source);
+export function findFirstFilter(filters: string[], source?: SourceIterator | undefined) {
+  for (const filter of filters) {
+    const result = $tw.wiki.filterTiddlers(filter, undefined, source);
     if (result.length > 0) {
       return result[0];
     }
@@ -64,15 +84,10 @@ function findFirstFilter(filters, source) {
   return null;
 }
 
-function getTwCustomMimeType(fileExtension, mimeGetType) {
-  let officialMimeType = mimeGetType(fileExtension);
+export function getTwCustomMimeType(fileExtension: string) {
+  let officialMimeType = getType(fileExtension);
   if (officialMimeType === 'text/markdown') {
     officialMimeType = 'text/x-markdown';
   }
   return officialMimeType;
 }
-
-module.exports = {
-  generateTiddlerBaseFilepath,
-  getTwCustomMimeType,
-};

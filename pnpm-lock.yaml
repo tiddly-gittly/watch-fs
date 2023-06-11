@@ -1,6 +1,12 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  chokidar:
+    specifier: ^3.5.3
+    version: 3.5.3
+  mime:
+    specifier: ^3.0.0
+    version: 3.0.0
   npm-check-updates:
     specifier: ^16.10.12
     version: 16.10.12
@@ -21,6 +27,9 @@ devDependencies:
   '@modern-js/tsconfig':
     specifier: ^2.22.1
     version: 2.22.1
+  '@types/mime':
+    specifier: ^3.0.1
+    version: 3.0.1
   '@types/node':
     specifier: ^20.2.5
     version: 20.3.0
@@ -1965,6 +1974,10 @@ packages:
     resolution: {integrity: sha512-Y/uImid8aAwrEA24/1tcRZwpxX3pIFTSilcNDKSPn+Y2iDywSEachzRuvgAYYLR3wpGXAsMbv5lvKLDZLeYPAw==}
     dependencies:
       '@types/unist': 2.0.6
+    dev: true
+
+  /@types/mime@3.0.1:
+    resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
     dev: true
 
   /@types/node@18.16.17:
@@ -4792,6 +4805,12 @@ packages:
     dependencies:
       braces: 3.0.2
       picomatch: 2.3.1
+
+  /mime@3.0.0:
+    resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
+    engines: {node: '>=10.0.0'}
+    hasBin: true
+    dev: false
 
   /mimic-fn@2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}

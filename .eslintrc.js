@@ -13,6 +13,7 @@ module.exports = {
       },
     ],
     'prettier/prettier': 'off',
+    '@typescript-eslint/member-ordering': 'off',
     '@typescript-eslint/method-signature-style': 'off',
     'import/order': 'off',
   },

@@ -1,4 +1,6 @@
-module.exports = function deepEqual(x, y) {
+import { ITiddlerFields } from 'tiddlywiki';
+
+export function deepEqual(x, y) {
   if (x === y) {
     return true;
   }
@@ -48,7 +50,7 @@ module.exports = function deepEqual(x, y) {
     return true;
   }
   return false;
-};
+}
 
 function titleListEqual(x, y) {
   // y is like "GettingStarted [[Discover TiddlyWiki]] Upgrading", and x is an array
@@ -81,9 +83,11 @@ const fieldsToDelete = ['bag', 'revision'];
  * Delete things like "bag" and "revision" that doesn't save to file
  * @param {tiddler.fields} tiddlerFields
  */
-function deleteRuntimeFieldsFromTiddler(tiddlerFields) {
+function deleteRuntimeFieldsFromTiddler(tiddlerFields: ITiddlerFields) {
   for (const fieldName of fieldsToDelete) {
     if (fieldName in tiddlerFields) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error Index signature in type 'ITiddlerFields' only permits reading.ts(2542)
       delete tiddlerFields[fieldName];
     }
   }

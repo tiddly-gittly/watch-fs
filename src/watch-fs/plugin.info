@@ -1,9 +1,12 @@
 {
   "title": "$:/plugins/linonetwo/watch-fs",
-  "description": "Reload changed tiddlers from disc",
+  "description": "Reload changed tiddlers from disc filesystem",
   "author": "LinOnetwo",
   "core-version": ">=5.1.22",
   "plugin-type": "plugin",
   "version": "0.1.0",
+  "dependents": [
+    "$:/plugins/twcloud/tiddlyweb-sse"
+  ],
   "list": "readme"
 }
