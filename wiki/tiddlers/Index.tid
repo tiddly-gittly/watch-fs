@@ -5,6 +5,10 @@ type: text/vnd.tiddlywiki
 
 Reload change from filesystem
 
+{{$:/plugins/linonetwo/watch-fs/readme}}
+
+!! Related discussions
+
 # https://github.com/OokTech/TW5-Bob/issues/198
 # https://github.com/Jermolene/TiddlyWiki5/issues/1530
 # https://github.com/Jermolene/TiddlyWiki5/issues/3060
