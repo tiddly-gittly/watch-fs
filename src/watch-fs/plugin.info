@@ -5,6 +5,7 @@
   "core-version": ">=5.1.22",
   "plugin-type": "plugin",
   "version": "0.1.0",
+  "Modern.TiddlyDev#ExternalModules": "fsevents",
   "dependents": [
     "$:/plugins/twcloud/tiddlyweb-sse"
   ],

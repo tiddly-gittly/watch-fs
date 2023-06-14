@@ -88,6 +88,12 @@ class FileSystemMonitor {
         '**/.git',
       ],
       atomic: true,
+      /** Fsevent requires a binary, which is not able to deliver in tiddlywiki json plugin.
+       * No loader is configured for ".node" files: node_modules/.pnpm/fsevents@2.3.2/node_modules/fsevents/e
+        node_modules/.pnpm/fsevents@2.3.2/node_modules/fsevents/fsevents.js:13:23:
+          13 │ const Native = require("./fsevents.node");
+      */
+      useFsEvents: false,
       //  usePolling: true,  // CHOKIDAR_USEPOLLING=1
     });
     this.setupListeners();
