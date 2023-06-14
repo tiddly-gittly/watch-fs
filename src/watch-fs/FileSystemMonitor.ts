@@ -70,6 +70,11 @@ class FileSystemMonitor {
 
   watcher: chokidar.FSWatcher;
 
+  /**
+   * Expose chokidar lib for other usages.
+   */
+  public chokidar: typeof chokidar = chokidar;
+
   constructor() {
     // eslint-disable-next-line no-console, @typescript-eslint/no-empty-function
     this.debugLog = this.isDebug ? (...args: any[]) => console.log('[watch-fs]', ...args) : () => {};
