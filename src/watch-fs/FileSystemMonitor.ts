@@ -219,9 +219,10 @@ export class FileSystemMonitor {
           return;
         }
 
-                // on creation of non-tiddler file, for example, .md and .png file, we create a .meta file for it
+        // on creation of non-tiddler file, for example, .md and .png file, we create a .meta file for it
         // and don't add meta file for JSON, because some JSON plugin contains metadata inside of it.
-        const isCreatingNewNonTiddlerFile = changeType === 'add' && !fileExtension.endsWith('tid')&& !fileExtension.endsWith('json') && !fs.existsSync(metaFileAbsolutePath);
+        const ignoredExtension = ['tid', 'json', 'meta'];
+        const isCreatingNewNonTiddlerFile = changeType === 'add' && !fs.existsSync(metaFileAbsolutePath) && !ignoredExtension.includes(fileExtension.slice(1));
         if (isCreatingNewNonTiddlerFile) {
           const createdTime = toTWUTCString(new Date());
           this.debugLog(`Adding meta file ${metaFileAbsolutePath} using mime type ${fileMimeType}`);

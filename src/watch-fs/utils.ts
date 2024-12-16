@@ -1,4 +1,3 @@
-import { getType } from 'mime';
 import path from 'path';
 import { ITiddlersInFile, SourceIterator, Tiddler } from 'tiddlywiki';
 
@@ -85,7 +84,9 @@ export function findFirstFilter(filters: string[], source?: SourceIterator | und
 }
 
 export function getTwCustomMimeType(fileExtension: string) {
-  let officialMimeType = getType(fileExtension);
+  // If the new type matches a known extention, use that MIME type's encoding, empty means fallback to tid.
+  const extInfo = $tw.utils.getFileExtensionInfo(fileExtension);
+  let officialMimeType = extInfo ? extInfo.type : '';
   if (officialMimeType === 'text/markdown') {
     officialMimeType = 'text/x-markdown';
   }

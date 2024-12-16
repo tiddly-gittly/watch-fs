@@ -48,8 +48,7 @@
     "tiddlywiki-plugin-dev": "^0.3.2"
   },
   "dependencies": {
-    "chokidar": "^4.0.1",
-    "mime": "^4.0.4"
+    "chokidar": "^4.0.1"
   },
   "pnpm": {
     "patchedDependencies": {
