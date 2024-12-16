@@ -2,12 +2,14 @@
   This file is modified based on $:/plugins/OokTech/Bob/FileSystemMonitor.js
 */
 
-import chokidar from 'chokidar';
+import type IChokidar from 'chokidar';
 import fs from 'fs';
 import path from 'path';
 import type { IBootFilesIndex, IBootFilesIndexItem, ITiddlyWiki, ITiddlyWikiInfoJSON } from 'tiddlywiki';
 import { deepEqual } from './deep-equal';
 import { getTwCustomMimeType, safeStringifyHugeTiddler, toTWUTCString } from './utils';
+
+const chokidar = require('$:/plugins/linonetwo/watch-fs/chokidar.js').default as typeof IChokidar;
 
 interface ITWWithMonitor extends ITiddlyWiki {
   watchFs: FileSystemMonitor;
@@ -68,7 +70,7 @@ class FileSystemMonitor {
    */
   lockedFiles: Set<string> = new Set<string>();
 
-  watcher: chokidar.FSWatcher;
+  watcher: ReturnType<typeof chokidar.watch>;
 
   /**
    * Expose chokidar lib for other usages.
@@ -98,7 +100,6 @@ class FileSystemMonitor {
         node_modules/.pnpm/fsevents@2.3.2/node_modules/fsevents/fsevents.js:13:23:
           13 │ const Native = require("./fsevents.node");
       */
-      useFsEvents: false,
       //  usePolling: true,  // CHOKIDAR_USEPOLLING=1
     });
     this.setupListeners();
