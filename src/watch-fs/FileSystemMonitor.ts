@@ -186,6 +186,8 @@ export class FileSystemMonitor {
       const fileExtension = path.extname(fileRelativePath);
       const fileMimeType = getTwCustomMimeType(fileExtension);
       this.debugLog(`${fileRelativePath} ${changeType}`);
+      // Don't handle metadata file change, otherwise there will be infinite loop, where metadata file itself will be regarded as a new tiddler and added.
+      if (fileExtension === '.meta') return;
       if (this.lockedFiles.has(fileRelativePath)) {
         this.debugLog(`${fileRelativePath} ignored due to mutex lock`);
         // release lock as we have already finished our job
