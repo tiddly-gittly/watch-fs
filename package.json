@@ -33,10 +33,7 @@
   "devDependencies": {
     "@modern-js/eslint-config": "^2.59.0",
     "@modern-js/tsconfig": "^2.63.2",
-    "@types/lodash": "^4.17.13",
     "@types/node": "^22.10.2",
-    "@types/pinyin": "^2.10.2",
-    "@types/react": "^19.0.1",
     "dprint": "^0.47.6",
     "eslint-config-tidgi": "^1.2.3",
     "husky": "^9.1.7",
