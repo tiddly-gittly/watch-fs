@@ -2,9 +2,7 @@
     "description": "Basic client-server edition",
     "plugins": [
         "tiddlywiki/filesystem",
-        "tiddlywiki/tiddlyweb",
-        "tiddlywiki/pluginlibrary",
-        "tiddlywiki/highlight"
+        "tiddlywiki/tiddlyweb"
     ],
     "themes": [
         "tiddlywiki/vanilla"
