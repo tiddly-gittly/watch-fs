@@ -328,33 +328,27 @@ class FileSystemMonitor {
           this.updateInverseIndex(fileRelativePath, undefined);
         } else {
           // now event is triggered by the git or VSCode
-          // ask tiddlywiki to delete the file, we first need to create a fake file for it to delete
+          // ask tiddlywiki to delete the file info so TW don't know this file anymore
           // can't directly use $tw.wiki.syncadaptor.deleteTiddler(tiddlerTitle);  because it will try to modify fs, and will failed:
           /* Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid'
           syncer-server-filesystem: Dispatching 'delete' task: blabla
           Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid' */
           this.lockedFiles.add(fileRelativePath);
           this.debugLog('trying to delete', fileAbsolutePath);
-          fs.writeFile(fileAbsolutePath, '', {}, () => {
-            // we may also need to provide a .meta file for wiki to delete
-            if (!fileAbsolutePath.endsWith('.tid')) {
-              fs.writeFileSync(metaFileAbsolutePath, '');
+          $tw.syncadaptor.wiki.removeTiddlerFileInfo(tiddlerTitle);
+          // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
+          try {
+            if (
+              fileAbsolutePath.startsWith('$') &&
+              fs.existsSync(fileAbsolutePath) &&
+              fs.readFileSync(fileAbsolutePath, 'utf-8').length === 0
+            ) {
+              fs.unlinkSync(fileAbsolutePath);
             }
-            $tw.syncadaptor.wiki.deleteTiddler(tiddlerTitle);
-            // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
-            try {
-              if (
-                fileAbsolutePath.startsWith('$') &&
-                fs.existsSync(fileAbsolutePath) &&
-                fs.readFileSync(fileAbsolutePath, 'utf-8').length === 0
-              ) {
-                fs.unlinkSync(fileAbsolutePath);
-              }
-            } catch (error) {
-              console.error(error);
-            }
-            this.updateInverseIndex(fileRelativePath, undefined);
-          });
+          } catch (error) {
+            console.error(error);
+          }
+          this.updateInverseIndex(fileRelativePath, undefined);
         }
       }
 
