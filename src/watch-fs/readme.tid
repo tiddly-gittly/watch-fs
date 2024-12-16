@@ -18,9 +18,21 @@ delete files to remove the tiddlers from the browser.
 
 !! Installation
 
-Some of the files are generated, but all the files are generated and ready to use in the `watch-fs` folder.
+From [[CPL - Watch FS|https://tw-cpl.netlify.app/#Plugin_202310110932256]] or from [[Github Release|https://github.com/tiddly-gittly/watch-fs/releases]].
 
 !! Usage
+
+Usually, it works after install (and a reload).
+
+But see limitations below if you want to build blog in Github Actions.
+
+!! Liminitation
+
+# can't handle rename in the disk, you can only rename from within the wiki (no such API to tell tw I've renamed a file)
+# I haven't tested this with [[$:/config/FileSystemPaths]] and [[Fix file info PR|https://github.com/Jermolene/TiddlyWiki5/pull/4630]] , but I use this feature every day, so I will definitely support it.
+# Can't handle if git change the tiddler while you are open its Draft tiddler (might be fixed by [[Deleting a draft tiddler should not also delete the original tiddler|https://github.com/Jermolene/TiddlyWiki5/issues/4792]] )
+
+!!! Can't build wiki blog
 
 This plugin will cause trouble if you build wiki with it enabled,
 so you have to remove it from your `tiddlywiki.info`, and add it to your wiki start arguments:
@@ -30,12 +42,6 @@ tiddlywiki +plugins/tiddlywiki/filesystem +plugins/tiddlywiki/tiddlyweb +plugins
 ```
 
 (why `+plugins/tiddlywiki/filesystem +plugins/tiddlywiki/tiddlyweb` here? See [[https://github.com/Jermolene/TiddlyWiki5/issues/4484#issuecomment-613200370]] for details)
-
-!!! Liminitation
-
-# can't handle rename in the disk, you can only rename from within the wiki (no such API to tell tw I've renamed a file)
-# I haven't tested this with [[$:/config/FileSystemPaths]] and [[Fix file info PR|https://github.com/Jermolene/TiddlyWiki5/pull/4630]] , but I use this feature every day, so I will definitely support it.
-# Can't handle if git change the tiddler while you are open its Draft tiddler (might be fixed by [[Deleting a draft tiddler should not also delete the original tiddler|https://github.com/Jermolene/TiddlyWiki5/issues/4792]] )
 
 !!! Using on network share / NFS
 
