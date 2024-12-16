@@ -36,9 +36,9 @@ export function safeStringifyHugeTiddler(tiddlerToStringify: ITiddlersInFile | T
       },
       undefined,
       '  ',
-    );
+    ).substring(0, 2000);
   }
-  return JSON.stringify(tiddlerToStringify, undefined, '  ');
+  return JSON.stringify(tiddlerToStringify, undefined, '  ').substring(0, 1000);
 }
 
 /**

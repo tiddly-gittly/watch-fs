@@ -11,26 +11,13 @@ import { getTwCustomMimeType, safeStringifyHugeTiddler, toTWUTCString } from './
 
 const chokidar = require('$:/plugins/linonetwo/watch-fs/chokidar.js').default as typeof IChokidar;
 
-interface ITWWithMonitor extends ITiddlyWiki {
-  watchFs: FileSystemMonitor;
-}
 interface ITiddlyWikiInfoJSONWithExtraConfig extends ITiddlyWikiInfoJSON {
   watchFolder?: string;
 }
 
-exports.name = 'watch-fs_FileSystemMonitor';
-exports.after = ['load-modules'];
-exports.platforms = ['node'];
-exports.synchronous = true;
-exports.startup = () => {
-  if (typeof $tw === 'undefined' || !$tw?.node) return;
-  const monitor = new FileSystemMonitor();
-  ($tw as ITWWithMonitor).watchFs = monitor;
-};
-
 type IBootFilesIndexItemWithTitle = Omit<IBootFilesIndexItem & { tiddlerTitle: string }, 'isEditableFile'>;
 
-class FileSystemMonitor {
+export class FileSystemMonitor {
   isDebug: boolean = true;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -224,16 +211,6 @@ class FileSystemMonitor {
          */
         let tiddlersDescriptor;
 
-        // on creation of non-tiddler file, for example, .md and .png file, we create a .meta file for it
-        const isCreatingNewNonTiddlerFile = changeType === 'add' && !fileExtension.endsWith('tid') && !fs.existsSync(metaFileAbsolutePath);
-        if (isCreatingNewNonTiddlerFile) {
-          const createdTime = toTWUTCString(new Date());
-          this.debugLog(`Adding meta file ${metaFileAbsolutePath} using mime type ${fileMimeType}`);
-          fs.writeFileSync(
-            metaFileAbsolutePath,
-            `caption: ${fileNameBase}\ncreated: ${createdTime}\nmodified: ${createdTime}\ntitle: ${fileName}\ntype: ${fileMimeType}\n`,
-          );
-        }
         // sometimes this file get removed by wiki before we can get it, for example, Draft tiddler done editing, it get removed, and we got ENOENT here
         try {
           tiddlersDescriptor = $tw.loadTiddlersFromFile(fileAbsolutePath);
@@ -242,8 +219,17 @@ class FileSystemMonitor {
           return;
         }
 
-        // need to delete original created file, because tiddlywiki will try to recreate a _1 file
+                // on creation of non-tiddler file, for example, .md and .png file, we create a .meta file for it
+        // and don't add meta file for JSON, because some JSON plugin contains metadata inside of it.
+        const isCreatingNewNonTiddlerFile = changeType === 'add' && !fileExtension.endsWith('tid')&& !fileExtension.endsWith('json') && !fs.existsSync(metaFileAbsolutePath);
         if (isCreatingNewNonTiddlerFile) {
+          const createdTime = toTWUTCString(new Date());
+          this.debugLog(`Adding meta file ${metaFileAbsolutePath} using mime type ${fileMimeType}`);
+          fs.writeFileSync(
+            metaFileAbsolutePath,
+            `caption: ${fileNameBase}\ncreated: ${createdTime}\nmodified: ${createdTime}\ntitle: ${fileName}\ntype: ${fileMimeType}\n`,
+          );
+          // need to delete original created file, because tiddlywiki will try to recreate a _1 file
           fs.unlinkSync(fileAbsolutePath);
           fs.unlinkSync(metaFileAbsolutePath);
         }
@@ -336,7 +322,8 @@ class FileSystemMonitor {
           Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid' */
           this.lockedFiles.add(fileRelativePath);
           this.debugLog('trying to delete', fileAbsolutePath);
-          $tw.syncadaptor.wiki.removeTiddlerFileInfo(tiddlerTitle);
+          // https://github.com/tiddly-gittly/watch-fs/issues/12
+          $tw.syncadaptor.removeTiddlerFileInfo(tiddlerTitle);
           // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
           try {
             if (
