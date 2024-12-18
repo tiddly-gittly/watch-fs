@@ -270,7 +270,7 @@ export class FileSystemMonitor {
                 tiddler.title,
               );
               this.updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
-              $tw.syncadaptor.wiki.addTiddler(tiddler);
+              $tw.syncadaptor!.wiki.addTiddler(tiddler);
             }
           });
         } else {
@@ -300,7 +300,7 @@ export class FileSystemMonitor {
             })
             // then we update wiki with each newly created tiddler
             .forEach((tiddler) => {
-              $tw.syncadaptor.wiki.addTiddler(tiddler);
+              $tw.syncadaptor!.wiki.addTiddler(tiddler);
             });
         }
       }
@@ -326,7 +326,7 @@ export class FileSystemMonitor {
           this.lockedFiles.add(fileRelativePath);
           this.debugLog('trying to delete', fileAbsolutePath);
           // https://github.com/tiddly-gittly/watch-fs/issues/12
-          $tw.syncadaptor.removeTiddlerFileInfo(tiddlerTitle);
+          $tw.syncadaptor!.removeTiddlerFileInfo(tiddlerTitle);
           // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
           try {
             if (

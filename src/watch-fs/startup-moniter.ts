@@ -1,5 +1,5 @@
-import type { ITiddlyWiki } from "tiddlywiki";
-import type { FileSystemMonitor } from "./FileSystemMonitor";
+import type { ITiddlyWiki } from 'tiddlywiki';
+import type { FileSystemMonitor } from './FileSystemMonitor';
 
 interface ITWWithMonitor extends ITiddlyWiki {
   watchFs: FileSystemMonitor;
@@ -10,8 +10,9 @@ exports.after = ['load-modules'];
 exports.platforms = ['node'];
 exports.synchronous = true;
 exports.startup = () => {
-  if (typeof $tw === 'undefined' || !$tw?.node) return;
-  const FileSystemMonitor = require('$:/plugins/linonetwo/watch-fs/FileSystemMonitor.js').FileSystemMonitor as typeof FileSystemMonitor;
+  // Works on NodeJS side and when FileSystemAdaptor is working
+  if (typeof $tw === 'undefined' || !$tw?.node || !$tw.syncadaptor) return;
+  const { FileSystemMonitor } = require('$:/plugins/linonetwo/watch-fs/FileSystemMonitor.js');
   const monitor = new FileSystemMonitor();
   ($tw as ITWWithMonitor).watchFs = monitor;
 };
