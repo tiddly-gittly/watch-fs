@@ -5,14 +5,16 @@
   "scripts": {
     "dev": "tiddlywiki-plugin-dev dev",
     "dev:wiki": "tiddlywiki-plugin-dev dev --write-wiki",
-    "dev:lan": "tiddlywiki-plugin-dev dev --lan",
+    "test": "tiddlywiki-plugin-dev test",
     "build": "npm run clean && tiddlywiki-plugin-dev build",
-    "build:library": "npm run clean && tiddlywiki-plugin-dev build --library --output dist/library",
     "publish": "npm run clean && tiddlywiki-plugin-dev publish",
-    "publish:offline": "npm run clean && tiddlywiki-plugin-dev publish --offline",
+    "reset": "rimraf ./**/node_modules",
+    "clean": "rimraf dist",
     "prepare": "husky install",
-    "update": "npm-check-updates -u && pnpm exec dprint config update",
-    "clean": "rimraf dist"
+    "update": "npm-check-updates -u && dprint config update",
+    "new": "tiddlywiki-plugin-dev new",
+    "build:library": "npm run clean && tiddlywiki-plugin-dev build --library --output dist/library",
+    "publish:offline": "npm run clean && tiddlywiki-plugin-dev publish --offline"
   },
   "engines": {
     "node": ">=16"
