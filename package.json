@@ -32,23 +32,23 @@
   },
   "devDependencies": {
     "@modern-js/eslint-config": "^2.59.0",
-    "@modern-js/tsconfig": "^2.63.2",
-    "@types/node": "^22.10.2",
-    "dprint": "^0.47.6",
+    "@modern-js/tsconfig": "^2.63.6",
+    "@types/node": "^22.10.6",
+    "dprint": "^0.48.0",
     "eslint-config-tidgi": "^1.2.3",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.11",
-    "postcss": "^8.4.49",
+    "lint-staged": "^15.3.0",
+    "postcss": "^8.5.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tw5-typed": "^0.5.14",
-    "npm-check-updates": "^17.1.11",
-    "typescript": "^5.7.2",
+    "npm-check-updates": "^17.1.13",
+    "typescript": "^5.7.3",
     "tiddlywiki": "^5.3.6",
     "tiddlywiki-plugin-dev": "^0.3.2"
   },
   "dependencies": {
-    "chokidar": "^4.0.1"
+    "chokidar": "^4.0.3"
   },
   "pnpm": {
     "patchedDependencies": {
