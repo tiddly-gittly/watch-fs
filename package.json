@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tiddlywiki-plugin-dev dev",
     "dev:wiki": "tiddlywiki-plugin-dev dev --write-wiki",
-    "test": "tiddlywiki-plugin-dev test",
+    "test": "cross-env TEST=true tiddlywiki-plugin-dev test",
     "build": "npm run clean && tiddlywiki-plugin-dev build",
     "publish": "npm run clean && tiddlywiki-plugin-dev publish",
     "reset": "rimraf ./**/node_modules",
@@ -36,18 +36,19 @@
     "@modern-js/eslint-config": "^2.59.0",
     "@modern-js/tsconfig": "^2.63.6",
     "@types/node": "^22.10.6",
+    "cross-env": "^7.0.3",
     "dprint": "^0.48.0",
     "eslint-config-tidgi": "^1.2.3",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
+    "npm-check-updates": "^17.1.13",
     "postcss": "^8.5.1",
     "rimraf": "^6.0.1",
+    "tiddlywiki": "^5.3.6",
+    "tiddlywiki-plugin-dev": "^0.3.2",
     "ts-node": "^10.9.2",
     "tw5-typed": "^0.5.14",
-    "npm-check-updates": "^17.1.13",
-    "typescript": "^5.7.3",
-    "tiddlywiki": "^5.3.6",
-    "tiddlywiki-plugin-dev": "^0.3.2"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "chokidar": "^4.0.3"
