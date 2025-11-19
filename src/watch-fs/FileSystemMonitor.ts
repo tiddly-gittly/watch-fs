@@ -109,8 +109,7 @@ export class FileSystemMonitor {
     try {
       return this.inverseFilesIndex[filePath].tiddlerTitle;
     } catch {
-      // if file isn't in our index, we can't do anything with it.
-      // just return null so the caller can ignore it.
+      // if file isn't in our index, we can't do anything with it so just ignore
       return null;
     }
   }
@@ -244,7 +243,7 @@ export class FileSystemMonitor {
         if (!this.filePathExistsInIndex(fileRelativePath)) {
           tiddlers.forEach((tiddler) => {
 
-            // FIX ignore browser drafts to prevent "zombie drafts" (race conditions during saving)
+            // no need to watch drafts and doing so causes issues like "zombie" drafts
             if (tiddler['draft.of']) {
                return;
             }
@@ -292,7 +291,7 @@ export class FileSystemMonitor {
           // so we have to check whether tiddler in the disk is identical to the one in the wiki, if so, we ignore it in the case 1.
           tiddlers
             .filter((tiddler) => {
-              // FIX
+              // ignore drafts
               if (tiddler['draft.of']) {
                 return false;
               }
@@ -327,7 +326,7 @@ export class FileSystemMonitor {
       if (changeType === 'unlink') {
         const tiddlerTitle = this.getTitleByPath(fileRelativePath);
 
-        // FIX: if we don't know this file, ignore the deletion (don't crash)
+        // if we don't know this file, ignore the deletion (don't crash)
         if (!tiddlerTitle) {
             this.debugLog('Unknown file deleted, ignoring:', fileRelativePath);
             return;
@@ -347,12 +346,12 @@ export class FileSystemMonitor {
           syncer-server-filesystem: Dispatching 'delete' task: blabla
           Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid' */
 
-          // FIX allow TiddlyWiki server to react to its own deletion logic
+          // allow TiddlyWiki server to react to its own deletion logic
           // this.lockedFiles.add(fileRelativePath);
           this.debugLog('trying to delete', fileAbsolutePath);
           // https://github.com/tiddly-gittly/watch-fs/issues/12
           $tw.syncadaptor!.removeTiddlerFileInfo(tiddlerTitle);
-          // FIX actually delete from memory
+          // actually delete from memory
           $tw.wiki.deleteTiddler(tiddlerTitle);
           // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
           try {
