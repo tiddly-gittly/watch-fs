@@ -346,8 +346,6 @@ export class FileSystemMonitor {
           syncer-server-filesystem: Dispatching 'delete' task: blabla
           Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid' */
 
-          // allow TiddlyWiki server to react to its own deletion logic
-          // this.lockedFiles.add(fileRelativePath);
           this.debugLog('trying to delete', fileAbsolutePath);
           // https://github.com/tiddly-gittly/watch-fs/issues/12
           $tw.syncadaptor!.removeTiddlerFileInfo(tiddlerTitle);
