@@ -80,6 +80,8 @@ export class FileSystemMonitor {
         '**/subwiki/**',
         '**/.DS_Store',
         '**/.git',
+        '**/Draft of *',
+        /(^|[\/\\])\../, // ignore dot files (ie temp text editor files)
       ],
       atomic: true,
       /** Fsevent requires a binary, which is not able to deliver in tiddlywiki json plugin.
