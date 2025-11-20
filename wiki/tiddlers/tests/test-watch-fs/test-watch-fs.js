@@ -63,7 +63,7 @@ Tests for watch-fs FileSystemMonitor logic adjustments.
 
       // This ensures your new try/catch block is working
       var result = monitor.getTitleByPath("/non/existent/path.tid");
-      expect(result).toBe("null");
+      expect(result).toBe(null);
     });
 
   });
