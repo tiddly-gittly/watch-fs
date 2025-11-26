@@ -76,6 +76,39 @@
       expect($tw.syncadaptor.removeTiddlerFileInfo).toHaveBeenCalledWith("Test_Delete");
     });
 
+    it("should handle multiple rapid file deletions correctly", function() {
+      spyOn(chokidar, "watch").and.returnValue(mockWatcher);
+      spyOn($tw.wiki, "deleteTiddler");
+      spyOn($tw.syncadaptor, "removeTiddlerFileInfo");
+
+      // Mock getTiddler for BOTH files
+      spyOn($tw.wiki, "getTiddler").and.callFake(function(title) {
+        if (title === "File_A" || title === "File_B") {
+          return { fields: { title: title } };
+        }
+        return null;
+      });
+
+      // Initialize Monitor (This triggers mockWatcher.on)
+      var monitor = new FileSystemMonitorModule();
+
+      var listener = mockWatcher.on.calls.mostRecent().args[1];
+
+      // Populate the index so the plugin recognizes the files
+      monitor.inverseFilesIndex["File_A.tid"] = { tiddlerTitle: "File_A" };
+      monitor.inverseFilesIndex["File_B.tid"] = { tiddlerTitle: "File_B" };
+
+      // Simulate "Simultaneous" Events
+      // We assume paths are relative or absolute based on your OS, usually relative works if watchPathBase is set correctly
+      listener("unlink", path.join(monitor.watchPathBase, "File_A.tid"));
+      listener("unlink", path.join(monitor.watchPathBase, "File_B.tid"));
+
+      // Verify
+      expect($tw.wiki.deleteTiddler).toHaveBeenCalledWith("File_A");
+      expect($tw.wiki.deleteTiddler).toHaveBeenCalledWith("File_B");
+      expect($tw.wiki.deleteTiddler).toHaveBeenCalledTimes(2);
+    });
+
   });
 
 })();
