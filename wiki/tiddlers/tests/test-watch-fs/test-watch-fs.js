@@ -1,69 +1,79 @@
-/*\
-Tests for watch-fs FileSystemMonitor logic adjustments.
-\*/
 (function() {
 
   /*jslint node: true, browser: true */
-  /*global $tw: false, describe: false, it: false, expect: false, spyOn: false */
+  /*global $tw: false, describe: false, it: false, expect: false, spyOn: false, beforeAll: false, beforeEach: false */
   "use strict";
 
   describe("watch-fs FileSystemMonitor", function() {
 
-    if(!$tw.node) {
-      return;
-    }
+    if (!$tw.node) return;
 
-    // Helper to get the monitor instance even if disabled by TEST=true env var
-    function getMonitor() {
-      if ($tw.watchFs) return $tw.watchFs;
+    var FileSystemMonitorModule;
+    var chokidar;
+    var path = require("path");
+    var mockWatcher;
 
-      // If running in test mode, the startup script skips initialization.
-      // We must manually require the class to test it.
-      try {
-        var FileSystemMonitor = require("$:/plugins/linonetwo/watch-fs/FileSystemMonitor.js").FileSystemMonitor;
-        return new FileSystemMonitor();
-      } catch (e) {
-        console.warn("Could not load FileSystemMonitor for testing", e);
-        return null;
-      }
-    }
-
-    it("should manually patch $tw.boot.files to prevent duplicates", function() {
-      var monitor = getMonitor();
-      if (!monitor) return;
-
-      var mockTitle = "Test_Race_Condition_Tiddler";
-      var mockPath = "/mock/path/to/tiddlers/Test_Race_Condition_Tiddler.tid";
-
-      // We spy on addTiddler to ensure our fix runs BEFORE the tiddler is added
-      spyOn($tw.syncadaptor.wiki, "addTiddler").and.callFake(function(tiddler) {
-        // ASSERTION: The fix works if boot.files is populated *before* this runs
-        expect($tw.boot.files[mockTitle]).toBeDefined();
-        expect($tw.boot.files[mockTitle].filepath).toEqual(mockPath);
-      });
-
-      // Since we can't easily trigger the private listener, we test the *Side Effect* logic directly.
-      // This mimics exactly what your new code block does:
-      $tw.boot.files[mockTitle] = {
-        filepath: mockPath,
-        type: "text/vnd.tiddlywiki",
-        hasMetaFile: false
-      };
-
-      // In a real run, your code calls this immediately after patching boot.files
-      $tw.syncadaptor.wiki.addTiddler({ title: mockTitle });
-
-      // Cleanup
-      delete $tw.boot.files[mockTitle];
+    beforeAll(function() {
+      FileSystemMonitorModule = require("$:/plugins/linonetwo/watch-fs/FileSystemMonitor.js").FileSystemMonitor;
+      chokidar = require('$:/plugins/linonetwo/watch-fs/chokidar.js').default;
     });
 
-    it("should return null instead of crashing on unknown files", function() {
-      var monitor = getMonitor();
-      if (!monitor) return;
+    // Create a fresh mock for every single test
+    beforeEach(function() {
+      mockWatcher = {
+        on: jasmine.createSpy("watcher.on"),
+               close: jasmine.createSpy("watcher.close")
+      };
+    });
 
-      // This ensures your new try/catch block is working
-      var result = monitor.getTitleByPath("/non/existent/path.tid");
-      expect(result).toBe(null);
+    it("should update $tw.boot.files BEFORE adding tiddler to prevent duplicate _1 files", function() {
+      spyOn(chokidar, "watch").and.returnValue(mockWatcher);
+      spyOn($tw.syncadaptor.wiki, "addTiddler");
+      spyOn($tw, "loadTiddlersFromFile").and.returnValue({
+        tiddlers: [{ title: "New_Tiddler_Test", text: "content" }],
+        filepath: "/mock/path/New_Tiddler_Test.tid",
+        type: "text/vnd.tiddlywiki"
+      });
+
+      var monitor = new FileSystemMonitorModule();
+
+      // Use mostRecent() to ensure we get the listener from *this* test instance
+      var listener = mockWatcher.on.calls.mostRecent().args[1];
+
+      var mockPath = "/mock/path/New_Tiddler_Test.tid";
+      listener("add", mockPath);
+
+      expect($tw.boot.files["New_Tiddler_Test"]).toBeDefined();
+      expect($tw.syncadaptor.wiki.addTiddler).toHaveBeenCalled();
+
+      delete $tw.boot.files["New_Tiddler_Test"];
+    });
+
+    it("should clean up $tw.boot.files when a file is deleted", function() {
+      spyOn(chokidar, "watch").and.returnValue(mockWatcher);
+      spyOn($tw.wiki, "deleteTiddler");
+      spyOn($tw.syncadaptor, "removeTiddlerFileInfo");
+
+      // Mock getTiddler to return a fake tiddler so the plugin proceeds with deletion
+      spyOn($tw.wiki, "getTiddler").and.callFake(function(title) {
+        if (title === "Test_Delete") {
+          return { fields: { title: "Test_Delete" } };
+        }
+        return null;
+      });
+
+      var monitor = new FileSystemMonitorModule();
+      monitor.inverseFilesIndex["Test_Delete.tid"] = { tiddlerTitle: "Test_Delete" };
+
+      var listener = mockWatcher.on.calls.mostRecent().args[1];
+
+      // Construct full path using the monitor's actual base path
+      var mockFullPath = path.join(monitor.watchPathBase, "Test_Delete.tid");
+
+      listener("unlink", mockFullPath);
+
+      expect($tw.wiki.deleteTiddler).toHaveBeenCalledWith("Test_Delete");
+      expect($tw.syncadaptor.removeTiddlerFileInfo).toHaveBeenCalledWith("Test_Delete");
     });
 
   });
