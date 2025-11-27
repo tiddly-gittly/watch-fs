@@ -80,6 +80,8 @@ export class FileSystemMonitor {
         '**/subwiki/**',
         '**/.DS_Store',
         '**/.git',
+        '**/Draft of *',
+        /(^|[\/\\])\../, // ignore dot files (ie temp text editor files)
       ],
       atomic: true,
       /** Fsevent requires a binary, which is not able to deliver in tiddlywiki json plugin.
@@ -109,9 +111,8 @@ export class FileSystemMonitor {
     try {
       return this.inverseFilesIndex[filePath].tiddlerTitle;
     } catch {
-      // fatal error, shutting down.
-      this.watcher.close();
-      throw new Error(`${filePath}\n↑ not existed in watch-fs plugin's FileSystemMonitor's this.inverseFilesIndex`);
+      // if file isn't in our index, we can't do anything with it so just ignore
+      return null;
     }
   }
 
@@ -243,6 +244,11 @@ export class FileSystemMonitor {
         // but maybe our index is not updated, or maybe user is modify a system tiddler, we need to check each case
         if (!this.filePathExistsInIndex(fileRelativePath)) {
           tiddlers.forEach((tiddler) => {
+
+            // no need to watch drafts and doing so causes issues like "zombie" drafts
+            if (tiddler['draft.of']) {
+               return;
+            }
             // check whether we are rename an existed tiddler
             this.debugLog('getting new tiddler.title', tiddler.title);
             const existedWikiRecord = $tw.wiki.getTiddler(tiddler.title);
@@ -269,7 +275,16 @@ export class FileSystemMonitor {
                 'get new addTiddler tiddler.title',
                 tiddler.title,
               );
+              this.debugLog(`Manually patching $tw.boot.files for: ${tiddler.title}`);
+              // Update local plugin index
               this.updateInverseIndex(fileRelativePath, { ...fileDescriptor, tiddlerTitle: tiddler.title });
+              // register the file in TiddlyWiki's boot records
+              // prevents TW from thinking the tiddler is "new" and creating a duplicate "_1" file.
+              $tw.boot.files[tiddler.title] = {
+                filepath: fileAbsolutePath,
+                type: fileDescriptor.type || 'text/vnd.tiddlywiki',
+                hasMetaFile: fileDescriptor.hasMetaFile || false
+              };
               $tw.syncadaptor!.wiki.addTiddler(tiddler);
             }
           });
@@ -278,6 +293,10 @@ export class FileSystemMonitor {
           // so we have to check whether tiddler in the disk is identical to the one in the wiki, if so, we ignore it in the case 1.
           tiddlers
             .filter((tiddler) => {
+              // ignore drafts
+              if (tiddler['draft.of']) {
+                return false;
+              }
               this.debugLog('updating existed tiddler', tiddler.title);
               const tiddlerInWiki = $tw.wiki.getTiddler(tiddler.title)?.fields;
               if (tiddlerInWiki === undefined) {
@@ -309,6 +328,11 @@ export class FileSystemMonitor {
       if (changeType === 'unlink') {
         const tiddlerTitle = this.getTitleByPath(fileRelativePath);
 
+        // if we don't know this file, ignore the deletion (don't crash)
+        if (!tiddlerTitle) {
+            this.debugLog('Unknown file deleted, ignoring:', fileRelativePath);
+            return;
+        }
         // if this tiddler is not existed in the wiki, this means this deletion is triggered by wiki
         // we only react on event that triggered by the git or VSCode
         const existedTiddlerResult = $tw.wiki.getTiddler(tiddlerTitle);
@@ -323,10 +347,12 @@ export class FileSystemMonitor {
           /* Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid'
           syncer-server-filesystem: Dispatching 'delete' task: blabla
           Sync error while processing delete of 'blabla': Error: ENOENT: no such file or directory, unlink '/Users//Desktop/repo/wiki/Meme-of-LinOnetwo/tiddlers/blabla.tid' */
-          this.lockedFiles.add(fileRelativePath);
+
           this.debugLog('trying to delete', fileAbsolutePath);
           // https://github.com/tiddly-gittly/watch-fs/issues/12
           $tw.syncadaptor!.removeTiddlerFileInfo(tiddlerTitle);
+          // actually delete from memory
+          $tw.wiki.deleteTiddler(tiddlerTitle);
           // sometime deleting system tiddler will result in an empty file, we need to try delete that empty file
           try {
             if (
